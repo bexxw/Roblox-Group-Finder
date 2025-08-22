@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Roblox Group Finder — Web</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0f1223;
+      --card:#171a2f;
+      --muted:#8c93b2;
+      --text:#e7e9f7;
+      --accent:#6d8bff;
+      --accent-2:#00d1b2;
+      --danger:#ff4d6d;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --border:rgba(255,255,255,0.08);
+      --shadow:0 10px 30px rgba(0,0,0,0.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 10% 10%, #131735, #0b0d1a 60%, #070812);
+      color:var(--text);
+    }
+    .container{
+      max-width:1100px; margin:32px auto; padding:0 16px;
+      display:grid; grid-template-columns: 1fr 1.2fr; gap:24px;
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 18px; border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0));
+    }
+    .title{font-size:18px; font-weight:700; letter-spacing:.2px}
+    .muted{color:var(--muted); font-size:13px}
+    .card .content{padding:18px}
+    label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px}
+    input{
+      width:100%; padding:12px 14px; background:#0e1022; color:var(--text);
+      border:1px solid var(--border); border-radius:12px; outline:none;
+    }
+    input:focus{border-color:var(--accent)}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+    .btns{display:flex; gap:12px; margin-top:14px; flex-wrap:wrap}
+    button{
+      border:1px solid var(--border); background:#0e1022; color:var(--text);
+      padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600;
+      transition:.2s transform, .2s background, .2s color, .2s border-color;
+    }
+    button.primary{background:linear-gradient(180deg, #2b39a3, #1b266d); border-color:#2d3db3}
+    button.primary:hover{transform:translateY(-1px)}
+    button.ghost:hover{background:#12142b}
+    button.stop{background:linear-gradient(180deg, #a32b50, #6d1b30); border-color:#b32d52}
+    .status-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px;vertical-align:middle}
+    .on{background:var(--ok)} .off{background:var(--danger)}
+    .warn{background:var(--warn)}
+    .log{
+      height:520px; background:#080a18; border:1px solid var(--border); border-radius:12px;
+      padding:14px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size:13px; overflow:auto; white-space:pre-wrap; line-height:1.5;
+    }
+    .foot{padding:12px 18px; border-top:1px solid var(--border); display:flex; align-items:center; gap:10px; justify-content:space-between}
+    .badge{padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:#0e1022; font-size:12px; color:var(--muted)}
+    .keywall{
+      position:fixed; inset:0; backdrop-filter: blur(8px);
+      background:linear-gradient(180deg, rgba(4,6,20,0.85), rgba(4,6,20,0.75));
+      display:flex; align-items:center; justify-content:center; padding:20px; z-index:99;
+    }
+    .keycard{max-width:420px; width:100%; background:#0c0f24; border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow)}
+    .keycard .hd{padding:18px 20px; border-bottom:1px solid var(--border)}
+    .keycard .bd{padding:18px 20px}
+    .keycard h2{margin:0 0 6px 0}
+    .key-row{display:flex; gap:10px; margin-top:12px}
+    .key-row input{flex:1}
+    .oktext{color:var(--ok); font-weight:700}
+    .err{color:#ff7b8a; font-weight:700}
+    @media (max-width: 980px){
+      .container{grid-template-columns:1fr}
+      .log{height:380px}
+    }
+  </style>
+</head>
+<body>
+  <!-- Key duvarı -->
+  <div class="keywall" id="keywall">
+    <div class="keycard">
+      <div class="hd">
+        <h2>Giriş Anahtarı</h2>
+        <div class="muted">Devam etmek için <b>ravenxx11</b> anahtarını girin.</div>
+      </div>
+      <div class="bd">
+        <label for="key">Key</label>
+        <div class="key-row">
+          <input id="key" type="password" placeholder="Anahtar (ravenxx11)" />
+          <button class="primary" id="keyBtn">Giriş</button>
+        </div>
+        <div id="keyState" class="muted" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <section class="card">
+      <div class="head">
+        <div class="title">Roblox Group Finder</div>
+        <div class="muted">Backend: Flask • Canlı Log: SSE</div>
+      </div>
+      <div class="content">
+        <div class="row">
+          <div>
+            <label for="threads">Threads</label>
+            <input id="threads" type="number" min="1" max="200" value="50" />
+          </div>
+          <div>
+            <label for="webhook">Discord Webhook URL</label>
+            <input id="webhook" type="url" placeholder="https://discord.com/api/webhooks/..." />
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="startBtn">Başlat</button>
+          <button class="stop" id="stopBtn">Durdur</button>
+          <button class="ghost" id="clearBtn">Logları Temizle</button>
+        </div>
+      </div>
+      <div class="foot">
+        <div>
+          <span class="status-dot off" id="statusDot"></span>
+          <span id="statusText" class="muted">Durum: Kapalı</span>
+        </div>
+        <div class="badge" id="threadsBadge">Threads: 0</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="head">
+        <div class="title">Canlı Log</div>
+        <div class="muted">Gerçek zamanlı çıktı</div>
+      </div>
+      <div class="content">
+        <div id="log" class="log"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Basit yardımcılar
+    const $ = s => document.querySelector(s);
+    const logEl = $("#log");
+    const statusDot = $("#statusDot");
+    const statusText = $("#statusText");
+    const threadsBadge = $("#threadsBadge");
+
+    let KEY = null;
+    let eventSource = null;
+
+    function setStatus(running, threads=0){
+      if(running){
+        statusDot.className = "status-dot on";
+        statusText.textContent = "Durum: Çalışıyor";
+        threadsBadge.textContent = "Threads: " + threads;
+      } else {
+        statusDot.className = "status-dot off";
+        statusText.textContent = "Durum: Kapalı";
+        threadsBadge.textContent = "Threads: 0";
+      }
+    }
+
+    function appendLog(line){
+      const atBottom = (logEl.scrollTop + logEl.clientHeight + 8) >= logEl.scrollHeight;
+      logEl.textContent += (logEl.textContent ? "\n" : "") + line;
+      if(atBottom){
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+    }
+
+    function startSSE(){
+      if(eventSource) return;
+      eventSource = new EventSource("/logs/stream");
+      eventSource.addEventListener("ping", () => {});
+      eventSource.onmessage = (e) => {
+        appendLog(e.data);
+      };
+      eventSource.onerror = (e) => {
+        appendLog("[!] Log akışı kesildi, yeniden dene veya sayfayı yenile.");
+        stopSSE();
+      };
+    }
+
+    function stopSSE(){
+      if(eventSource){
+        eventSource.close();
+        eventSource = null;
+      }
+    }
+
+    async function api(path, payload){
+      const res = await fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload || {})
+      });
+      const js = await res.json().catch(()=>({}));
+      if(!res.ok){
+        const err = js && js.error ? js.error : ("HTTP "+res.status);
+        throw new Error(err);
+      }
+      return js;
+    }
+
+    // Key duvarı
+    $("#keyBtn").addEventListener("click", () => {
+      const val = $("#key").value.trim();
+      const box = $("#keyState");
+      if(val === "ravenxx11"){
+        KEY = val;
+        $("#keywall").style.display = "none";
+        box.textContent = "";
+        startSSE();
+        // İlk durum kontrolü
+        fetch("/status").then(r => r.json()).then(s => {
+          setStatus(!!s.running, s.threads || 0);
+        }).catch(()=>{});
+      } else {
+        box.innerHTML = "<span class='err'>Hatalı anahtar.</span>";
+      }
+    });
+
+    // Başlat
+    $("#startBtn").addEventListener("click", async () => {
+      if(!KEY){ appendLog("[!] Önce key giriniz."); return; }
+      const threads = parseInt($("#threads").value, 10);
+      const webhook = $("#webhook").value.trim();
+      try{
+        const r = await api("/start", { key: KEY, threads, webhook });
+        appendLog("[✓] Başlatıldı. Threads: " + r.threads);
+        setStatus(true, r.threads);
+        startSSE();
+      }catch(e){
+        appendLog("[X] Başlatılamadı: " + e.message);
+      }
+    });
+
+    // Durdur
+    $("#stopBtn").addEventListener("click", async () => {
+      try{
+        const r = await api("/stop", {});
+        appendLog("[✓] Durduruldu.");
+        setStatus(false, 0);
+      }catch(e){
+        appendLog("[X] Durdurma hatası: " + e.message);
+      }
+    });
+
+    // Logları temizle
+    $("#clearBtn").addEventListener("click", () => {
+      logEl.textContent = "";
+    });
+
+    // Sayfa yenilenince arka uç çalışıyorsa göstermek için
+    window.addEventListener("load", () => {
+      fetch("/status").then(r => r.json()).then(s => {
+        setStatus(!!s.running, s.threads || 0);
+      }).catch(()=>{});
+    });
+  </script>
+</body>
+</html>
